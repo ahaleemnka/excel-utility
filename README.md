@@ -5,7 +5,7 @@ This application provides a utility to map a list of POJOs (Plain Old Java Objec
 
 ## Key Features:
 - **Excel Mapping:** Map a list of POJOs to an Excel workbook with dynamically populated columns and data.
-- **Annotations-Based Metadata Extraction:** Use custom annotations (`@ExcelSheet` and `@ExcelColumn`) to define the structure of the Excel sheet (such as sheet name, column names, and orders).
+- **Annotations-Based Metadata Extraction:** Use custom annotations (`@ExcelMapper` and `@ExcelColumn`) to define the structure of the Excel sheet (such as sheet name, column names, and orders).
 - **Metadata Validation:** Ensure that column orders are unique, valid, and do not exceed the predefined limit.
 - **Data Flattening:** Flatten lists and maps to store in Excel cells in a readable format.
 - **Circular Reference Detection:** Avoid infinite recursion during metadata extraction through circular reference detection.
@@ -53,7 +53,7 @@ This application provides a utility to map a list of POJOs (Plain Old Java Objec
 
 ### Example POJO Class with Annotations
 ```java
-@ExcelSheet(sheetName = "Employee Data")
+@ExcelMapper(sheetName = "Employee Data")
 public class Employee {
     @ExcelColumn(header = "Employee ID", columnOrder = 1)
     private int employeeId;
@@ -73,8 +73,8 @@ public class Employee {
 public class Main {
     public static void main(String[] args) {
         List<Employee> employees = // Get your employee data list
-        ExcelMapper excelMapper = new ExcelMapper();
-        Workbook workbook = excelMapper.mapToExcel(employees);
+        ExcelUtility excelUtility = new ExcelUtility();
+        Workbook workbook = excelUtility.mapToExcel(employees);
 
         // Now you can write the workbook to a file or use it further
     }
@@ -90,7 +90,7 @@ This will produce an Excel sheet named **"Employee Data"** with three columns: *
 
 ### `ExcelMapper`
 
-- **Purpose:** The `ExcelMapper` class converts a list of POJOs into an Excel workbook. It processes annotations like `@ExcelSheet` and `@ExcelColumn` to structure the sheet and columns.
+- **Purpose:** The `ExcelMapper` class converts a list of POJOs into an Excel workbook. It processes annotations like `@ExcelMapper` and `@ExcelColumn` to structure the sheet and columns.
 - **Key Methods:**
   - `mapToExcel`: Maps the POJO list to an Excel workbook.
   - `populateHeaderValues`: Populates the header row with column names.
