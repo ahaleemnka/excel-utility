@@ -2,6 +2,9 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+dependency-reduced-pom.xml
+*.xls
+*.xlsx
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
