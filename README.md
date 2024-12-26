@@ -3,6 +3,11 @@
 
 This application provides a utility to map a list of POJOs (Plain Old Java Objects) to an Excel workbook, creating well-organized and metadata-driven Excel sheets. It uses Java reflection and annotations to automatically extract column metadata and populate Excel sheets with headers and data rows. 
 
+See medium pudlish for the same :
+[Part 1](https://medium.com/@ahaleemnka/part-1-the-journey-to-simplifying-excel-handling-4d910a59e0e0)
+[Part 2](https://medium.com/@ahaleemnka/part-2-mastering-the-excel-mapper-utility-5006484b6b1f)
+[Part 3](https://medium.com/@ahaleemnka/part-3-setting-up-and-using-the-excel-mapper-utility-16b06433a979)
+
 ## Key Features:
 - **Excel Mapping:** Map a list of POJOs to an Excel workbook with dynamically populated columns and data.
 - **Annotations-Based Metadata Extraction:** Use custom annotations (`@ExcelMapper` and `@ExcelColumn`) to define the structure of the Excel sheet (such as sheet name, column names, and orders).
