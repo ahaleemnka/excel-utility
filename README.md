@@ -204,7 +204,7 @@ We welcome contributions to improve the application. If you'd like to contribute
   - When `includeAll` is set to `true`, fields of nested classes will be included in the metadata list.
   - Nested classes that are not annotated with `@ExcelMapper` are now processed correctly when `includeAll` is enabled.
 - Bug Fix: Fixed exception handling for missing `@ExcelMapper` annotation on classes.
-### Version 1.0.0 (2024-12-31)
+### Version 1.0.0 (2024-12-01)
 - Initial release with core functionality for processing Excel metadata using annotations `@ExcelMapper` and `@ExcelColumn`.
 
 ---
