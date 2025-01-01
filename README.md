@@ -195,6 +195,20 @@ We welcome contributions to improve the application. If you'd like to contribute
 
 ---
 
+## Changelog
+### Version 1.1.0 (2025-01-01)
+- **New Feature**: Introduced `includeAll` feature for `@ExcelMapper` annotation.
+  - If `includeAll` is set to `true`, all non-annotated fields will also be included in metadata processing.
+  - If `includeAll` is set to `false`, only fields annotated with `@ExcelColumn` will be included in metadata processing.
+- **Improvement**: Enhanced metadata processing for nested classes.
+  - When `includeAll` is set to `true`, fields of nested classes will be included in the metadata list.
+  - Nested classes that are not annotated with `@ExcelMapper` are now processed correctly when `includeAll` is enabled.
+- Bug Fix: Fixed exception handling for missing `@ExcelMapper` annotation on classes.
+### Version 1.0.0 (2024-12-31)
+- Initial release with core functionality for processing Excel metadata using annotations `@ExcelMapper` and `@ExcelColumn`.
+
+---
+
 ## License
 
 This project is licensed under the Apache License 2.0 License - see the [LICENSE](LICENSE) file for details.

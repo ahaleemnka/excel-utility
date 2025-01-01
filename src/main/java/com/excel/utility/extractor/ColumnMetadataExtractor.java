@@ -96,12 +96,14 @@ public class ColumnMetadataExtractor {
             field.setAccessible(true);
 
             // If the field has the @ExcelColumn annotation, process it.
-            if (field.isAnnotationPresent(ExcelColumn.class)) {
+            if (sheetAnnotation.includeAll() || field.isAnnotationPresent(ExcelColumn.class)) {
                 ExcelColumn annotation = field.getAnnotation(ExcelColumn.class);
 
                 // Generate the computed header name based on the annotation and parent header.
-                String computedHeader = headerNameProcessUtils.convertHeader(annotation.header(), parentHeader, field.getName());
-                int columnOrder = annotation.columnOrder();
+                String computedHeader = annotation == null ? headerNameProcessUtils.convertHeader(null, parentHeader, field.getName())
+                        : headerNameProcessUtils.convertHeader(annotation.header(), parentHeader, field.getName());
+
+                int columnOrder = annotation == null ? 0 : annotation.columnOrder();
 
                 // If the field type is not a primitive or wrapper, recursively extract metadata from the field's type.
                 if (!ClassTypeUtils.isPrimitiveOrWrapper(field.getType())) {
