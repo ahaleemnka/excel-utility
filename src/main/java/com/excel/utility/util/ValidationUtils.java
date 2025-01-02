@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.excel.utility.Config.MAX_COLUMN_ORDER;
+
 /**
  * Utility class responsible for validating column metadata.
  * It validates whether column orders are valid (greater than 0 and within a specified range),
@@ -51,9 +53,6 @@ public class ValidationUtils {
         if (columnOrder <= 0) {
             throw new IllegalArgumentException("Invalid column order: " + columnOrder + ". Column order must be greater than 0.");
         }
-
-        // Define a reasonable upper limit for column orders (e.g., 1000).
-        final int MAX_COLUMN_ORDER = 1000;
 
         // Column order must not exceed the maximum limit.
         if (columnOrder > MAX_COLUMN_ORDER) {

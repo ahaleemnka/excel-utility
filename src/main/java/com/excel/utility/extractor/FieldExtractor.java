@@ -5,6 +5,7 @@ import com.excel.utility.util.ClassTypeUtils;
 import com.excel.utility.util.ValueFlattenProcessor;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -50,9 +51,9 @@ public class FieldExtractor {
             else if (ClassTypeUtils.isPrimitiveOrWrapper(fieldValue.getClass())) {
                 return fieldValue.toString();
             }
-            // If the field value is a List, flatten it using ValueFlattenProcessor
-            else if (fieldValue instanceof List) {
-                return valueFlattenProcessor.flattenList((List<?>) fieldValue);
+            // If the field value is a Collection, flatten it using ValueFlattenProcessor
+            else if (fieldValue instanceof Collection) {
+                return valueFlattenProcessor.flattenCollection((Collection<?>) fieldValue);
             }
             // If the field value is a Map, flatten it using ValueFlattenProcessor
             else if (fieldValue instanceof Map) {
@@ -79,8 +80,8 @@ public class FieldExtractor {
      * @return The field value at the end of the hierarchy, or null if not found
      */
     private Object getFieldValueFromHierarchy(Object targetObject, List<Field> parentClasses) {
-        // Return null if the target object or parent classes list is null or empty
-        if (targetObject == null || parentClasses == null || parentClasses.isEmpty()) {
+        // Return null if the parent classes list is null or empty
+        if (parentClasses == null || parentClasses.isEmpty()) {
             return null;
         }
 
@@ -88,10 +89,6 @@ public class FieldExtractor {
 
         // Iterate through the parent class field list and traverse the field hierarchy
         for (Field parentField : parentClasses) {
-            // If the current object is null, return null (field not found)
-            if (currentObject == null) {
-                return null;
-            }
             // Use ObjectValueExtractor to extract the field value from the current object
             currentObject = objectValueExtractor.process(currentObject, parentField);
         }

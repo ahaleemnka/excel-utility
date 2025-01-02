@@ -10,6 +10,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The ExcelUtility class is responsible for converting a list of POJOs into an Excel workbook representation.
@@ -37,16 +40,34 @@ public class ExcelUtility {
      * @throws IllegalArgumentException if the data list is empty or the POJO class is not annotated with @ExcelMapper.
      */
     public Workbook mapToExcel(List<?> dataList) {
+        // Delegate to the Stream-based implementation
+        return mapToExcel(dataList.stream());
+    }
+
+    /**
+     * Converts a stream of POJOs into an Excel workbook.
+     * The stream should contain objects of a class annotated with @ExcelMapper to map the sheet name and columns.
+     * <p>
+     * This method supports streaming large datasets efficiently without requiring the entire dataset to be loaded
+     * into memory at once. Each object in the stream will be processed incrementally to populate the Excel sheet.
+     *
+     * @param dataStream the stream of POJOs to map to the Excel workbook.
+     * @return a Workbook object containing the data.
+     * @throws IllegalArgumentException if the data stream is null, empty, or the POJO class is not annotated with @ExcelMapper.
+     */
+    public Workbook mapToExcel(Stream<?> dataStream) {
+
         // Create a new workbook for the Excel file
         Workbook workbook = new XSSFWorkbook();
 
-        // Validate the input list
-        if (Objects.isNull(dataList) || dataList.isEmpty()) {
+        // Validate the input stream
+        if (Objects.isNull(dataStream)) {
             throw new IllegalArgumentException("The list of data cannot be empty.");
         }
 
-        // Get the class of the first object in the list
-        Class<?> clazz = dataList.get(0).getClass();
+        List<?> dataList = dataStream.collect(Collectors.toList());
+        // Get the class of the first object in the stream
+        Class<?> clazz = extractClassFromStream(dataList);
         // Check if the class has the @ExcelMapper annotation
         ExcelMapper sheetAnnotation = clazz.getAnnotation(ExcelMapper.class);
         if (sheetAnnotation == null) {
@@ -66,10 +87,17 @@ public class ExcelUtility {
         populateHeaderValues(sheet, columnMetadataList);
 
         // Step 3: Populate data rows
-        populateRowValues(dataList, sheet, columnMetadataList);
+        populateRowValues(dataList.stream(), sheet, columnMetadataList);
 
         // Return the generated workbook
         return workbook;
+    }
+
+    private Class<?> extractClassFromStream(List<?> dataStream) {
+        // Peek the first element from the stream to infer the class
+        return dataStream.stream().findFirst()
+                .map(Object::getClass)
+                .orElseThrow(() -> new IllegalArgumentException("The data stream is empty."));
     }
 
     /**
@@ -81,7 +109,7 @@ public class ExcelUtility {
      */
     private void populateHeaderValues(Sheet sheet, List<ColumnMetadata> columnMetadataList) {
         // Create the first row for the headers
-        Row headerRow = sheet.createRow(0);
+        Row headerRow = sheet.createRow(Config.ROW_VALUE_FOR_HEADER);
         // Set the header cell style
         CellStyle cellStyle = CellUtils.styleForHeader(sheet);
 
@@ -99,30 +127,31 @@ public class ExcelUtility {
     }
 
     /**
-     * Populates the data rows of the Excel sheet with the values from the POJO list.
+     * Populates the data rows of the Excel sheet with the values from the POJO stream.
      * The values are extracted based on the column metadata and set in the corresponding cells.
      *
-     * @param dataList           the list of POJOs from which data values will be extracted.
+     * @param dataStream         the stream of POJOs from which data values will be extracted.
      * @param sheet              the sheet in the workbook where the data rows are to be populated.
      * @param columnMetadataList the list of ColumnMetadata to determine the column order and corresponding data.
      */
-    private void populateRowValues(List<?> dataList, Sheet sheet, List<ColumnMetadata> columnMetadataList) {
-        // Start populating data from the second row (row index 1)
-        int rowIndex = 1;
+    private void populateRowValues(Stream<?> dataStream, Sheet sheet, List<ColumnMetadata> columnMetadataList) {
+        // Atomic integer to keep track of the row index
+        AtomicInteger rowIndex = new AtomicInteger(Config.ROW_VALUE_START_FOR_DATA);
 
-        // Iterate over the data list (POJOs)
-        for (Object targetObject : dataList) {
-            // Create a new row for each object in the data list
-            Row row = sheet.createRow(rowIndex);
+        // Process each object in the stream
+        dataStream.forEach(targetObject -> {
+            // Create a new row for the current object
+            Row row = sheet.createRow(rowIndex.getAndIncrement());
+
             // Iterate over the column metadata and set values for each column
             for (ColumnMetadata columnMetadata : columnMetadataList) {
                 // Extract the field value using the FieldExtractor
                 String value = fieldExtractor.process(columnMetadata, targetObject);
+
                 // Create a cell for each column and set the extracted value
                 Cell cell = row.createCell(columnMetadata.getColumnOrder() - 1);
                 cell.setCellValue(value);
             }
-            rowIndex++; // Move to the next row
-        }
+        });
     }
 }

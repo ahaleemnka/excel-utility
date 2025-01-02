@@ -21,11 +21,8 @@ public class ObjectValueExtractor {
      * @return the value of the field, or null if the field is not accessible
      */
     public Object process(Object object, Field field) {
-        if (object == null) {
-            throw new NullPointerException("hlm.excel.util.extractor.process() Object is null");
-        }
         if (field == null) {
-            throw new NullPointerException("hlm.excel.util.extractor.process() Field is null");
+            throw new NullPointerException("hlm.excel.util.extractor.ObjectValueExtractor.process() Field is null");
         }
         Object fieldValue = null;
         String fieldName = field.getName();
@@ -36,6 +33,10 @@ public class ObjectValueExtractor {
             // If getter method is not available, try to find the 'is' method (for boolean fields)
             if (fieldValue == null) {
                 fieldValue = findIsMethod(fieldName, object);
+            }
+
+            if (object == null) {
+                return null;
             }
 
             // If neither getter nor 'is' method is found, access the field directly
@@ -59,7 +60,7 @@ public class ObjectValueExtractor {
      */
     private Object findGetterMethod(String fieldName, Object object) {
         // Generate the getter method name by capitalizing the first letter of the field name
-        return callMethod(capitalizeFirstLetter("get" + capitalizeFirstLetter(fieldName)), object);
+        return callMethod("get" + capitalizeFirstLetter(fieldName), object);
     }
 
     /**
@@ -72,7 +73,7 @@ public class ObjectValueExtractor {
      */
     private Object findIsMethod(String fieldName, Object object) {
         // Generate the 'is' method name by capitalizing the first letter of the field name
-        return callMethod(capitalizeFirstLetter("is" + capitalizeFirstLetter(fieldName)), object);
+        return callMethod("is" + capitalizeFirstLetter(fieldName), object);
     }
 
     /**
@@ -86,9 +87,9 @@ public class ObjectValueExtractor {
         try {
             // Retrieve the method by name and invoke it
             Method getterMethod = object.getClass().getMethod(methodName);
+            getterMethod.setAccessible(true);
             return getterMethod.invoke(object); // Return the result of invoking the method
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            // If the method is not found or invocation fails, return null
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NullPointerException e) {
             return null;
         }
     }

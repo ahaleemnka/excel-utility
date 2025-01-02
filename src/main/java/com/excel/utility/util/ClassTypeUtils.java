@@ -29,11 +29,20 @@ public class ClassTypeUtils {
                 clazz == BigInteger.class ||                // BigInteger for large integers
                 clazz == Currency.class ||                  // Currency type
                 clazz == UUID.class ||                      // UUID type
-                clazz == List.class ||                      // List collection type
-                clazz == Map.class ||                       // Map collection type
-                clazz == Set.class ||                       // Set collection type
                 clazz == Character.class ||                 // Character wrapper type
-                clazz.isEnum() ||                             // Enum types
-                clazz.getPackageName().startsWith("java.");
+                clazz.isEnum();
     }
+
+    public static boolean isListSetMap(Class<?> clazz) {
+        return List.class.isAssignableFrom(clazz) ||
+                Set.class.isAssignableFrom(clazz) ||
+                Map.class.isAssignableFrom(clazz) ||
+                Queue.class.isAssignableFrom(clazz) ||
+                Deque.class.isAssignableFrom(clazz) ||
+                SortedSet.class.isAssignableFrom(clazz) ||
+                SortedMap.class.isAssignableFrom(clazz) ||
+                NavigableSet.class.isAssignableFrom(clazz) ||
+                NavigableMap.class.isAssignableFrom(clazz);
+    }
+
 }

@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FieldExtractorTest {
 
+    private static final String MAP_DELIMITER = " : ";
     private final FieldExtractor fieldExtractor = new FieldExtractor();
 
     // Helper method for creating a dummy ColumnMetadata with parent class fields
@@ -68,7 +69,7 @@ class FieldExtractorTest {
         SomeClass targetObject = new SomeClass(Arrays.asList("Apple", "Banana", "Cherry"));
 
         String result = fieldExtractor.process(metadata, targetObject);
-        assertEquals("[Apple, Banana, Cherry]", result, "List field should be flattened correctly.");
+        assertEquals("Apple, Banana, Cherry", result, "List field should be flattened correctly.");
     }
 
     @Test
@@ -78,7 +79,7 @@ class FieldExtractorTest {
         SomeClass targetObject = new SomeClass(Map.of("Key1", "Value1", "Key2", "Value2"));
 
         String result = fieldExtractor.process(metadata, targetObject);
-        assertTrue(result.contains("{Key1=Value1, Key2=Value2}") || result.contains("{Key2=Value2, Key1=Value1}"), "Map field should be flattened correctly.");
+        assertTrue(result.contains("Key1" + MAP_DELIMITER + "Value1\nKey2" + MAP_DELIMITER + "Value2") || result.contains("Key2" + MAP_DELIMITER + "Value2\nKey1" + MAP_DELIMITER + "Value1"), "Map field should be flattened correctly.");
     }
 
     @Test

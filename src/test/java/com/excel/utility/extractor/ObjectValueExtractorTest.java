@@ -87,7 +87,7 @@ class ObjectValueExtractorTest {
         Field field = MyTestObject.class.getDeclaredField("employeeId");
 
         // Act: Call the process method with a null object
-        assertThrows(NullPointerException.class, () -> objectValueExtractor.process(testObject, field));
+        assertNull(objectValueExtractor.process(testObject, field));
     }
 
     @Test

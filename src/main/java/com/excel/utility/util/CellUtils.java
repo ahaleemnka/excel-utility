@@ -18,8 +18,6 @@ public class CellUtils {
     }
 
     public static void autoSize(Sheet sheet, List<ColumnMetadata> columnMetadataList) {
-        for (ColumnMetadata metadata : columnMetadataList) {
-            sheet.autoSizeColumn(metadata.getColumnOrder());
-        }
+        columnMetadataList.forEach(metadata -> sheet.autoSizeColumn(metadata.getColumnOrder()));
     }
 }

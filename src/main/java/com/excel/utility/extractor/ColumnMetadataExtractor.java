@@ -86,7 +86,7 @@ public class ColumnMetadataExtractor {
         // Ensure the class has the required @ExcelMapper annotation.
         ExcelMapper sheetAnnotation = clazz.getAnnotation(ExcelMapper.class);
         if (sheetAnnotation == null) {
-            throw new IllegalArgumentException("POJO class must have an @ExcelMapper annotation." + clazz.getName());
+            throw new IllegalArgumentException("POJO class must have an @ExcelMapper annotation : " + clazz.getName());
         }
 
         // Process each declared field in the class.
@@ -106,7 +106,7 @@ public class ColumnMetadataExtractor {
                 int columnOrder = annotation == null ? 0 : annotation.columnOrder();
 
                 // If the field type is not a primitive or wrapper, recursively extract metadata from the field's type.
-                if (!ClassTypeUtils.isPrimitiveOrWrapper(field.getType())) {
+                if (!ClassTypeUtils.isPrimitiveOrWrapper(field.getType()) && !ClassTypeUtils.isListSetMap(field.getType())) {
                     extractColumnMetadata(field.getType(), computedHeader, metadataList, new ArrayList<>(fieldList));
                 } else {
                     // Create ColumnMetadata for primitive or wrapper types and add to the metadata list.

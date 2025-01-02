@@ -7,7 +7,6 @@ import com.excel.utility.dto.ColumnMetadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.annotation.AnnotationTypeMismatchException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -46,7 +45,7 @@ class ColumnMetadataExtractorTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             columnMetadataExtractor.process(MyTestObjectWithoutExcelSheet.class);
         });
-        assertEquals("POJO class must have an @ExcelMapper annotation." + MyTestObjectWithoutExcelSheet.class.getName(), exception.getMessage());
+        assertEquals("POJO class must have an @ExcelMapper annotation : " + MyTestObjectWithoutExcelSheet.class.getName(), exception.getMessage());
     }
 
     // Test Case 3: Test process with circular references
@@ -255,7 +254,7 @@ class ColumnMetadataExtractorTest {
     @Test
     void testProcess_WithIncludeAllTrue_NestedClassAndWithoutAnnotation() {
         // Assert: Ensure that the nested class is annotated with @ExcelMapper throws exception
-        assertThrows(IllegalArgumentException.class,() -> columnMetadataExtractor.process(MyTestObjectWithIncludeAllTrueAndNestedClassWithoutAnnotation.class));
+        assertThrows(IllegalArgumentException.class, () -> columnMetadataExtractor.process(MyTestObjectWithIncludeAllTrueAndNestedClassWithoutAnnotation.class));
     }
 
 }
