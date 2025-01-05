@@ -105,10 +105,10 @@ public class ColumnMetadataExtractor {
 
                 int columnOrder = annotation == null ? 0 : annotation.columnOrder();
 
-                // If the field type is not a primitive or wrapper, recursively extract metadata from the field's type.
-                if (!ClassTypeUtils.isPrimitiveOrWrapper(field.getType()) && !ClassTypeUtils.isListSetMap(field.getType())) {
-                    extractColumnMetadata(field.getType(), computedHeader, metadataList, new ArrayList<>(fieldList));
-                } else {
+                if (ClassTypeUtils.isPrimitiveOrWrapper(field.getType())
+                        || ClassTypeUtils.isListSetMap(field.getType())
+                        || ClassTypeUtils.isJavaLibrary(field.getType())
+                        || Objects.isNull(field.getType().getAnnotation(ExcelMapper.class))) {
                     // Create ColumnMetadata for primitive or wrapper types and add to the metadata list.
                     ColumnMetadata columnMetadata = new ColumnMetadata(
                             field,
@@ -120,6 +120,11 @@ public class ColumnMetadataExtractor {
 
                     metadataList.add(columnMetadata);
                 }
+                // If the field type is not a primitive or wrapper, recursively extract metadata from the field's type.
+                else {
+                    extractColumnMetadata(field.getType(), computedHeader, metadataList, new ArrayList<>(fieldList));
+                }
+
             }
         }
 

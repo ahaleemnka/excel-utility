@@ -33,6 +33,10 @@ public class ClassTypeUtils {
                 clazz.isEnum();
     }
 
+    public static boolean isJavaLibrary(Class<?> clazz) {
+        return clazz.getPackageName().startsWith("java.");
+    }
+
     public static boolean isListSetMap(Class<?> clazz) {
         return List.class.isAssignableFrom(clazz) ||
                 Set.class.isAssignableFrom(clazz) ||

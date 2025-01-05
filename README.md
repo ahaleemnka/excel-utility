@@ -1,9 +1,8 @@
-
 # Excel Mapping Utility
 
-This application provides a utility to map a list of POJOs (Plain Old Java Objects) to an Excel workbook, creating well-organized and metadata-driven Excel sheets. It uses Java reflection and annotations to automatically extract column metadata and populate Excel sheets with headers and data rows. 
+This application provides a utility to map a list of POJOs (Plain Old Java Objects) to an Excel workbook, creating well-organized and metadata-driven Excel sheets. It uses Java reflection and annotations to automatically extract column metadata and populate Excel sheets with headers and data rows.
 
-See medium pudlish for the same :
+See medium publish for the same :
 [Part 1](https://medium.com/@ahaleemnka/part-1-the-journey-to-simplifying-excel-handling-4d910a59e0e0)
 [Part 2](https://medium.com/@ahaleemnka/part-2-mastering-the-excel-mapper-utility-5006484b6b1f)
 [Part 3](https://medium.com/@ahaleemnka/part-3-setting-up-and-using-the-excel-mapper-utility-16b06433a979)
@@ -93,9 +92,9 @@ This will produce an Excel sheet named **"Employee Data"** with three columns: *
 
 ## Class Definitions
 
-### `ExcelMapper`
+### `ExcelUtility`
 
-- **Purpose:** The `ExcelMapper` class converts a list of POJOs into an Excel workbook. It processes annotations like `@ExcelMapper` and `@ExcelColumn` to structure the sheet and columns.
+- **Purpose:** The `ExcelUtility` class converts a list of POJOs into an Excel workbook. It processes annotations like `@ExcelMapper` and `@ExcelColumn` to structure the sheet and columns.
 - **Key Methods:**
   - `mapToExcel`: Maps the POJO list to an Excel workbook.
   - `populateHeaderValues`: Populates the header row with column names.
@@ -129,7 +128,7 @@ This will produce an Excel sheet named **"Employee Data"** with three columns: *
 - **Purpose:** Flattens complex data structures like lists and maps into string representations suitable for Excel cells.
 - **Key Methods:**
   - `flattenList`: Flattens a list of objects into a comma-separated string.
-  - `flattenMap`: Flattens a map into a colon-separated key-value string.
+  - `flattenMap`: Flattens a map into a colon-separated key-value string, with each key-value pair on a new line.
 
 ### `FieldExtractor`
 
@@ -196,6 +195,15 @@ We welcome contributions to improve the application. If you'd like to contribute
 ---
 
 ## Changelog
+### Version 1.3.0 (2025-01-05)
+- **Enhancement**: Improved processing of lists and maps for Excel output.
+  - Lists are now converted to comma-separated strings for better readability in Excel cells.
+  - Maps are now converted to key-value pairs formatted as "key : value", with each pair on a new line.
+- **Feature Update**: Updated `ValueFlattenProcessor` to handle new list and map formatting requirements.
+- **Feature Update**: If the nested object class is not annotated with `@ExcelMapper`, the nested object is converted to a string and its fields are not processed. To include nested object fields, annotate the class with `@ExcelMapper`.
+- **Feature Update**: Added support for streams. Now, streams can also be provided instead of just lists.
+- **Bug Fixes**: Various bug fixes, including improved handling of nested classes and exception handling for invalid annotations.
+
 ### Version 1.1.0 (2025-01-01)
 - **New Feature**: Introduced `includeAll` feature for `@ExcelMapper` annotation.
   - If `includeAll` is set to `true`, all non-annotated fields will also be included in metadata processing.
@@ -204,6 +212,7 @@ We welcome contributions to improve the application. If you'd like to contribute
   - When `includeAll` is set to `true`, fields of nested classes will be included in the metadata list.
   - Nested classes that are not annotated with `@ExcelMapper` are now processed correctly when `includeAll` is enabled.
 - Bug Fix: Fixed exception handling for missing `@ExcelMapper` annotation on classes.
+
 ### Version 1.0.0 (2024-12-01)
 - Initial release with core functionality for processing Excel metadata using annotations `@ExcelMapper` and `@ExcelColumn`.
 
@@ -214,3 +223,4 @@ We welcome contributions to improve the application. If you'd like to contribute
 This project is licensed under the Apache License 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ---
+

@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,11 +24,11 @@ public class ExcelMapperIT {
     public void testExcelMapperWithAdvancedScenarios() {
         // Sample input data with varied scenarios, including null fields and nested objects
         List<TestData> inputData = Arrays.asList(
-                new TestData(5, null, null, null, null, null), // All null fields
-                new TestData(2, "Alice", null, "alice@example.com", null, new Address(null, "City 2")),
-                new TestData(3, null, 25, "bob@example.com", Collections.singletonList("C"), new Address("Street 3", null)),
-                new TestData(4, "Eve", 28, "eve@example.com", null, null), // Null Address
-                new TestData(1, "John", 30, "john@example.com", Arrays.asList("A", "B"), new Address("Street 1", "City 1"))
+                new TestData(5, null, null, null, null, null, null), // All null fields
+                new TestData(2, "Alice", null, "alice@example.com", null, new Address(null, "City 2"), new File("/test")),
+                new TestData(3, null, 25, "bob@example.com", Collections.singletonList("C"), new Address("Street 3", null),  new File("/test-new")),
+                new TestData(4, "Eve", 28, "eve@example.com", null, null, null), // Null Address
+                new TestData(1, "John", 30, "john@example.com", Arrays.asList("A", "B"), new Address("Street 1", "City 1"),  new File("/document"))
         );
 
         // Instantiate Excel utility for mapping
@@ -47,13 +48,14 @@ public class ExcelMapperIT {
         assertEquals("Header for ID is incorrect", "ID", headerRow.getCell(3).getStringCellValue());
         assertEquals("Header for Address - Street is incorrect", "Address - Street", headerRow.getCell(5).getStringCellValue());
         assertEquals("Header for Address - City is incorrect", "Address - City", headerRow.getCell(6).getStringCellValue());
+        assertEquals("Header for File is incorrect", "File", headerRow.getCell(7).getStringCellValue());
 
         // Validate data rows with utility method
-        validateDataRow(sheet.getRow(1), "No Name", "", "", "", "5", "", ""); // All null fields
-        validateDataRow(sheet.getRow(2), "Alice", "alice@example.com", "", "", "2", "", "City 2");
-        validateDataRow(sheet.getRow(3), "No Name", "bob@example.com", "25", "C", "3", "Street 3", "");
-        validateDataRow(sheet.getRow(4), "Eve", "eve@example.com", "28", "", "4", "", ""); // Null Address
-        validateDataRow(sheet.getRow(5), "John", "john@example.com", "30", "A, B", "1", "Street 1", "City 1");
+        validateDataRow(sheet.getRow(1), "No Name", "", "", "", "5", "", "", ""); // All null fields
+        validateDataRow(sheet.getRow(2), "Alice", "alice@example.com", "", "", "2", "", "City 2", "/test");
+        validateDataRow(sheet.getRow(3), "No Name", "bob@example.com", "25", "C", "3", "Street 3", "", "/test-new");
+        validateDataRow(sheet.getRow(4), "Eve", "eve@example.com", "28", "", "4", "", "", "");// Null Address
+        validateDataRow(sheet.getRow(5), "John", "john@example.com", "30", "A, B", "1", "Street 1", "City 1", "/document");
     }
 
     /**
@@ -67,8 +69,9 @@ public class ExcelMapperIT {
      * @param id     Expected ID value.
      * @param street Expected street value.
      * @param city   Expected city value.
+     * @param file
      */
-    private void validateDataRow(Row row, String name, String email, String age, String tags, String id, String street, String city) {
+    private void validateDataRow(Row row, String name, String email, String age, String tags, String id, String street, String city, String file) {
         assertNotNull("Data row should not be null", row);
         assertEquals("Name value is incorrect", name, row.getCell(0).getStringCellValue());
         assertEquals("Email value is incorrect", email, row.getCell(1).getStringCellValue());
@@ -77,6 +80,7 @@ public class ExcelMapperIT {
         assertEquals("ID value is incorrect", id, row.getCell(3).getStringCellValue());
         assertEquals("Street value is incorrect", street, row.getCell(5).getStringCellValue());
         assertEquals("City value is incorrect", city, row.getCell(6).getStringCellValue());
+        assertEquals("File value is incorrect", file, row.getCell(7).getStringCellValue());
     }
 }
 
@@ -103,13 +107,17 @@ class TestData {
     @ExcelColumn
     private Address address;
 
-    public TestData(Integer id, String name, Integer age, String email, List<String> tags, Address address) {
+    @ExcelColumn
+    private File file;
+
+    public TestData(Integer id, String name, Integer age, String email, List<String> tags, Address address, File file) {
         this.id = id;
         this.name = name;
         this.age = age;
         this.email = email;
         this.tags = tags;
         this.address = address;
+        this.file = file;
     }
 
     public String getName() {

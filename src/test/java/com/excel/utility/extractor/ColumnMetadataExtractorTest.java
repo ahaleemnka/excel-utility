@@ -7,6 +7,7 @@ import com.excel.utility.dto.ColumnMetadata;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -245,16 +246,10 @@ class ColumnMetadataExtractorTest {
 
         // Assert: Ensure that nested class fields without @ExcelColumn are not included
         assertNotNull(metadataList);
-        assertEquals(2, metadataList.size()); // Only 2 fields from the outer class (nested fields are excluded)
+        assertEquals(3, metadataList.size()); // Only 2 fields from the outer class (nested fields are excluded)
         assertTrue(metadataList.stream().anyMatch(metadata -> metadata.getHeader().equals("Employee Name")));
         assertTrue(metadataList.stream().anyMatch(metadata -> metadata.getHeader().equals("Employee Age")));
-    }
-
-    // Test Case 18: Test process with includeAll = true on a class with nested objects and non-@ExcelMapper annotation
-    @Test
-    void testProcess_WithIncludeAllTrue_NestedClassAndWithoutAnnotation() {
-        // Assert: Ensure that the nested class is annotated with @ExcelMapper throws exception
-        assertThrows(IllegalArgumentException.class, () -> columnMetadataExtractor.process(MyTestObjectWithIncludeAllTrueAndNestedClassWithoutAnnotation.class));
+        assertTrue(metadataList.stream().anyMatch(metadata -> metadata.getHeader().equals("File")));
     }
 
 }
@@ -786,78 +781,6 @@ class EmployeeDetailsWithAnnotation {
     }
 }
 
-@ExcelMapper(includeAll = true)
-class MyTestObjectWithIncludeAllTrueAndNestedClassWithoutAnnotation {
-
-    @ExcelColumn(header = "Employee Name", columnOrder = 1)
-    private String employeeName;
-
-    @ExcelColumn(header = "Employee Age", columnOrder = 2)
-    private int employeeAge;
-
-    private String employeeAddress; // Not annotated with @ExcelColumn
-
-    private EmployeeDetailsWithoutAnnotation employeeDetailsWithoutAnnotation; // Nested class, not annotated with @ExcelColumn
-
-    // Getters and setters
-    public String getEmployeeName() {
-        return employeeName;
-    }
-
-    public void setEmployeeName(String employeeName) {
-        this.employeeName = employeeName;
-    }
-
-    public int getEmployeeAge() {
-        return employeeAge;
-    }
-
-    public void setEmployeeAge(int employeeAge) {
-        this.employeeAge = employeeAge;
-    }
-
-    public String getEmployeeAddress() {
-        return employeeAddress;
-    }
-
-    public void setEmployeeAddress(String employeeAddress) {
-        this.employeeAddress = employeeAddress;
-    }
-
-    public EmployeeDetailsWithoutAnnotation getEmployeeDetailsWithoutAnnotation() {
-        return employeeDetailsWithoutAnnotation;
-    }
-
-    public void setEmployeeDetailsWithoutAnnotation(EmployeeDetailsWithoutAnnotation employeeDetailsWithoutAnnotation) {
-        this.employeeDetailsWithoutAnnotation = employeeDetailsWithoutAnnotation;
-    }
-}
-
-
-// Nested class
-class EmployeeDetailsWithoutAnnotation {
-    private String city;
-    private String country;
-
-    // Getters and setters
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-}
-
-
 @ExcelMapper(includeAll = false)
 class MyTestObjectWithIncludeAllFalseAndNestedClassExclusion {
 
@@ -868,6 +791,9 @@ class MyTestObjectWithIncludeAllFalseAndNestedClassExclusion {
     private int employeeAge;
 
     private String employeeAddress; // Not annotated with @ExcelColumn
+
+    @ExcelColumn
+    private File file;
 
     private EmployeeDetailsWithAnnotation employeeDetailsWithAnnotation; // Nested class, excluded due to includeAll = false
 
@@ -890,6 +816,10 @@ class MyTestObjectWithIncludeAllFalseAndNestedClassExclusion {
 
     public String getEmployeeAddress() {
         return employeeAddress;
+    }
+
+    public File getFile() {
+        return file;
     }
 
     public void setEmployeeAddress(String employeeAddress) {
