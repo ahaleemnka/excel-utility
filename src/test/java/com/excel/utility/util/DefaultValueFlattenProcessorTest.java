@@ -1,5 +1,7 @@
 package com.excel.utility.util;
 
+import com.excel.utility.processor.ObjectValueProcessor;
+import com.excel.utility.processor.impl.DefaultObjectValueProcessor;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -7,11 +9,11 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ValueFlattenProcessorTest {
+public class DefaultValueFlattenProcessorTest {
 
     private final static String MAP_DELIMITER = " : ";
     private final static String NEXT_LINE = "\n";
-    private final ValueFlattenProcessor processor = new ValueFlattenProcessor();
+    private final ObjectValueProcessor processor = new DefaultObjectValueProcessor();
 
     @Test
     void testFlattenList_NullValues() {

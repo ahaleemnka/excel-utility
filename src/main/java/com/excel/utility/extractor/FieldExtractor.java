@@ -1,99 +1,84 @@
 package com.excel.utility.extractor;
 
 import com.excel.utility.dto.ColumnMetadata;
-import com.excel.utility.util.ClassTypeUtils;
-import com.excel.utility.util.ValueFlattenProcessor;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
- * The FieldExtractor class processes a target object and extracts a field value from the object
- * based on the provided ColumnMetadata. It handles various field types including primitive,
- * wrapper, List, and Map types. If the field value is null, an empty string is returned.
- * <p>
- * This class uses ObjectValueExtractor to retrieve field values from the object and ValueFlattenProcessor
- * to process nested List and Map types.
+ * The {@code FieldExtractor} class is responsible for extracting field values from target objects
+ * based on the specified {@link ColumnMetadata}. It handles various data types, including primitive
+ * types, wrapper types, lists, and maps. If the field value is null, it returns an empty string.
+ *
+ * <p>Key features include:</p>
+ * <ul>
+ *   <li>Extracting field values from objects using reflection.</li>
+ *   <li>Handling complex hierarchies of fields (e.g., nested objects or lists of objects).</li>
+ *   <li>Gracefully handling null values by returning empty strings or null.</li>
+ * </ul>
+ *
+ * <p>The {@code FieldExtractor} uses an {@link ObjectExtractor} to retrieve field values and
+ * processes nested structures (lists and maps) using a flattening mechanism. This ensures that all
+ * types of fields, including nested collections, can be extracted efficiently.</p>
  */
 public class FieldExtractor {
 
-    private final ObjectValueExtractor objectValueExtractor; // Extracts field values from objects
-    private final ValueFlattenProcessor valueFlattenProcessor; // Processes lists and maps to flatten them
+    private final ObjectExtractor objectExtractor; // Extractor for field values from objects
 
     /**
-     * Constructs a FieldExtractor instance with default dependencies.
+     * Constructs a new {@code FieldExtractor} instance with default dependencies.
+     * The constructor initializes the internal {@link ObjectExtractor} for field extraction.
      */
     public FieldExtractor() {
-        this.objectValueExtractor = new ObjectValueExtractor(); // Initialize ObjectValueExtractor
-        this.valueFlattenProcessor = new ValueFlattenProcessor(); // Initialize ValueFlattenProcessor
+        this.objectExtractor = new ObjectExtractor(); // Initialize ObjectExtractor
     }
 
     /**
-     * Processes the target object and extracts the field value based on the ColumnMetadata provided.
-     * This method handles primitive types, wrapper types, Lists, and Maps, and flattens them as needed.
+     * Processes the target object and extracts the field value based on the provided {@link ColumnMetadata}.
+     * This method is capable of handling primitive types, wrapper types, and nested structures like Lists and Maps.
+     * If the field value is null, an empty string is returned.
      *
-     * @param columnMetadata Metadata of the column to determine the field and hierarchy to extract
-     * @param targetObject   The target object from which to extract the field value
-     * @return A string representation of the field value or an empty string if the value is null
+     * @param columnMetadata Metadata that contains the field hierarchy information for extraction
+     * @param targetObject   The target object from which the field value will be extracted
+     * @return A string representation of the field value, or an empty string if the value is null
+     * @throws RuntimeException if any issues occur during field extraction (e.g., field not found)
      */
-    public String process(ColumnMetadata columnMetadata, Object targetObject) {
+    public Object process(ColumnMetadata columnMetadata, Object targetObject) {
         try {
-            // Retrieve the field value from the object based on the parent class field list in metadata
-            Object fieldValue = getFieldValueFromHierarchy(targetObject, columnMetadata.getParentClassFieldList());
-
-            // If the field value is null, return an empty string
-            if (fieldValue == null) {
-                return "";
-            }
-            // If the field value is a primitive or wrapper, return its string representation
-            else if (ClassTypeUtils.isPrimitiveOrWrapper(fieldValue.getClass())) {
-                return fieldValue.toString();
-            }
-            // If the field value is a Collection, flatten it using ValueFlattenProcessor
-            else if (fieldValue instanceof Collection) {
-                return valueFlattenProcessor.flattenCollection((Collection<?>) fieldValue);
-            }
-            // If the field value is a Map, flatten it using ValueFlattenProcessor
-            else if (fieldValue instanceof Map) {
-                return valueFlattenProcessor.flattenMap((Map<?, ?>) fieldValue);
-            }
-            // Otherwise, return the field value's string representation
-            else {
-                return fieldValue.toString();
-            }
+            // Retrieve the field value from the object based on the parent class field hierarchy in metadata
+            return getFieldValueFromHierarchy(targetObject, columnMetadata.getParentClassFieldList());
         } catch (RuntimeException e) {
-            // Log or print the stack trace in case of an exception
+            // Log the stack trace or handle the exception if needed
             e.printStackTrace();
         }
-        // Return an empty string in case of any exceptions
-        return "";
+        // Return null in case of any extraction issues
+        return null;
     }
 
     /**
-     * Retrieves the value of a field from the target object, traversing the field hierarchy
-     * as specified in the parentClasses list.
+     * Retrieves the value of a field from the target object by traversing through the field hierarchy
+     * as specified in the {@code parentClasses} list within the {@link ColumnMetadata}.
+     * This method uses reflection to access fields at each level of the hierarchy.
      *
      * @param targetObject  The target object from which the field value is to be extracted
      * @param parentClasses A list of fields representing the hierarchy of parent classes to traverse
-     * @return The field value at the end of the hierarchy, or null if not found
+     * @return The final field value after traversing the field hierarchy, or null if not found
      */
     private Object getFieldValueFromHierarchy(Object targetObject, List<Field> parentClasses) {
-        // Return null if the parent classes list is null or empty
+        // Return null if the list of parent classes is null or empty
         if (parentClasses == null || parentClasses.isEmpty()) {
             return null;
         }
 
         Object currentObject = targetObject;
 
-        // Iterate through the parent class field list and traverse the field hierarchy
+        // Iterate through the field hierarchy in the parentClasses list and extract the field values
         for (Field parentField : parentClasses) {
-            // Use ObjectValueExtractor to extract the field value from the current object
-            currentObject = objectValueExtractor.process(currentObject, parentField);
+            // Use ObjectExtractor to retrieve the value of the field from the current object
+            currentObject = objectExtractor.process(currentObject, parentField);
         }
 
-        // Return the final field value after traversing the hierarchy
+        // Return the final value after traversing the entire hierarchy
         return currentObject;
     }
 }

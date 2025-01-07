@@ -33,7 +33,11 @@ public class AdvancedExcelMapperIT {
 
                 // Unannotated Nested Object
                 new AdvancedTestData(2, "Alice", new Object(),
-                        map2, List.of(), "Direct Value"),
+                        map2, List.of(), "Direct ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                        "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                        "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                        "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                        "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect Value"),
 
                 // Getter vs Field Discrepancies
                 new AdvancedTestData(3, "Bob", new ComplexNestedObject("Only Getter", null),
@@ -63,7 +67,11 @@ public class AdvancedExcelMapperIT {
 
         // Validate data rows
         //validateDataRow(sheet.getRow(1), "1", "John", "Level 1 - Level 2", Arrays.asList("Key1 : Value1", "Key2 : null"), "[123, String, 45.67]", "");
-        validateDataRow(sheet.getRow(2), "2", "Alice", "java.lang.Object", Arrays.asList("<empty> : Null Key", "Key3 : Value3"), "", "Direct Value");
+        validateDataRow(sheet.getRow(2), "2", "Alice", "java.lang.Object", Arrays.asList("<empty> : Null Key", "Key3 : Value3"), "", "Direct ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect " +
+                "ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect ValueDirect Value");
         validateDataRow(sheet.getRow(3), "3", "Bob", "Only Getter", Arrays.asList("Key4 : Value4"), "Element1, Element2", "Overridden Value");
         validateDataRow(sheet.getRow(4), "4", "Eve", "", largeMapValues, String.join(", ", largeList), "");
     }
@@ -75,7 +83,10 @@ public class AdvancedExcelMapperIT {
         assertTrue("Complex Nested Object value is incorrect", row.getCell(2).getStringCellValue().startsWith(complexNestedObject));
 
         for (String keyValue : map) {
-            assertTrue("Map value is incorrect \nExpected :\n" + keyValue + "\nActual :\n" + row.getCell(3).getStringCellValue(), row.getCell(3).getStringCellValue().contains(keyValue));
+            assertTrue("Map value is incorrect \nExpected :\n" + keyValue, row.getCell(3).getStringCellValue().contains(keyValue));
+        }
+        if(mixedCollection != null && mixedCollection.length() > 32767) {
+            mixedCollection = mixedCollection.substring(0, 32760);
         }
         assertEquals("Mixed Collection value is incorrect", mixedCollection, row.getCell(4).getStringCellValue());
         assertEquals("Direct Value value is incorrect", directValue, row.getCell(5).getStringCellValue());

@@ -5,11 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * The ObjectValueExtractor class provides functionality to extract the value of a field
+ * The ObjectExtractor class provides functionality to extract the value of a field
  * from an object using reflection. It attempts to retrieve the value using various methods
  * such as getter methods, `is` methods for boolean fields, and direct field access.
  */
-public class ObjectValueExtractor {
+public class ObjectExtractor {
 
     /**
      * Processes the object and retrieves the value of the specified field using reflection.
@@ -22,7 +22,7 @@ public class ObjectValueExtractor {
      */
     public Object process(Object object, Field field) {
         if (field == null) {
-            throw new NullPointerException("hlm.excel.util.extractor.ObjectValueExtractor.process() Field is null");
+            throw new NullPointerException("hlm.excel.util.extractor.ObjectExtractor.process() Field is null");
         }
         Object fieldValue = null;
         String fieldName = field.getName();

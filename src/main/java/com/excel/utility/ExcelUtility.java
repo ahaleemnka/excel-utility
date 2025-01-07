@@ -4,6 +4,8 @@ import com.excel.utility.annotation.ExcelMapper;
 import com.excel.utility.dto.ColumnMetadata;
 import com.excel.utility.extractor.ColumnMetadataExtractor;
 import com.excel.utility.extractor.FieldExtractor;
+import com.excel.utility.processor.ObjectValueProcessor;
+import com.excel.utility.processor.impl.DefaultObjectValueProcessor;
 import com.excel.utility.util.CellUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -15,140 +17,180 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The ExcelUtility class is responsible for converting a list of POJOs into an Excel workbook representation.
- * It maps the data fields of a POJO to a sheet in the Excel workbook, with each field being represented by a column.
- * The class uses annotations to extract metadata for the sheet and column headers, and handles the population of both the header and data rows in the Excel sheet.
+ * The {@code ExcelUtility} class provides functionality to map a list or stream of Plain Old Java Objects (POJOs)
+ * into an Excel workbook, facilitating data export from Java applications to Excel format.
+ * It uses annotations to map fields in POJOs to columns in the Excel sheet, making the process simple and customizable.
+ *
+ * <p>Key features of this utility include:</p>
+ * <ul>
+ *   <li>Annotation-based mapping of POJOs to Excel sheets and columns using the {@link ExcelMapper} annotation.</li>
+ *   <li>Efficient handling of large datasets via Java streams, minimizing memory consumption.</li>
+ *   <li>Customizable field extraction and value processing using pluggable components like {@link FieldExtractor} and {@link ObjectValueProcessor}.</li>
+ * </ul>
+ *
+ * <p>This class requires that POJOs be annotated with {@link ExcelMapper} to provide sheet names and column metadata
+ * for creating the Excel workbook. Additionally, headers and data rows are automatically styled for improved readability.</p>
  */
 public class ExcelUtility {
 
-    // Field extractor to retrieve field values based on the metadata
+    /**
+     * Extractor responsible for retrieving field values from POJOs based on column metadata.
+     */
     private final FieldExtractor fieldExtractor;
 
     /**
-     * Constructor that initializes the FieldExtractor.
+     * Processor responsible for converting object field values to their corresponding string representation for Excel cells.
+     */
+    private final ObjectValueProcessor objectValueProcessor;
+
+    /**
+     * Default constructor initializing the utility with default implementations for field extraction and value processing.
      */
     public ExcelUtility() {
-        fieldExtractor = new FieldExtractor();
+        this.fieldExtractor = new FieldExtractor();
+        this.objectValueProcessor = new DefaultObjectValueProcessor();
     }
 
     /**
-     * Converts a list of POJOs into an Excel workbook.
-     * The list should contain objects of a class annotated with @ExcelMapper to map the sheet name and columns.
+     * Constructor initializing the utility with a custom {@link FieldExtractor}.
+     *
+     * @param fieldExtractor the custom field extractor to use.
+     */
+    public ExcelUtility(FieldExtractor fieldExtractor) {
+        this.fieldExtractor = fieldExtractor;
+        this.objectValueProcessor = new DefaultObjectValueProcessor();
+    }
+
+    /**
+     * Constructor initializing the utility with a custom {@link ObjectValueProcessor}.
+     *
+     * @param objectValueProcessor the custom value processor to use.
+     */
+    public ExcelUtility(ObjectValueProcessor objectValueProcessor) {
+        this.fieldExtractor = new FieldExtractor();
+        this.objectValueProcessor = objectValueProcessor;
+    }
+
+    /**
+     * Constructor initializing the utility with custom implementations for both field extraction and value processing.
+     *
+     * @param fieldExtractor the custom field extractor to use.
+     * @param objectValueProcessor the custom value processor to use.
+     */
+    public ExcelUtility(FieldExtractor fieldExtractor, ObjectValueProcessor objectValueProcessor) {
+        this.fieldExtractor = fieldExtractor;
+        this.objectValueProcessor = objectValueProcessor;
+    }
+
+    /**
+     * Maps a list of POJOs to an Excel workbook.
+     *
+     * <p>This method collects the data from the provided list and creates an Excel sheet with the appropriate headers and rows.</p>
      *
      * @param dataList the list of POJOs to map to the Excel workbook.
-     * @return a Workbook object containing the data.
-     * @throws IllegalArgumentException if the data list is empty or the POJO class is not annotated with @ExcelMapper.
+     * @return a {@link Workbook} object containing the mapped data.
+     * @throws IllegalArgumentException if the data list is empty or the POJO class is not annotated with {@link ExcelMapper}.
      */
     public Workbook mapToExcel(List<?> dataList) {
-        // Delegate to the Stream-based implementation
         return mapToExcel(dataList.stream());
     }
 
     /**
-     * Converts a stream of POJOs into an Excel workbook.
-     * The stream should contain objects of a class annotated with @ExcelMapper to map the sheet name and columns.
-     * <p>
-     * This method supports streaming large datasets efficiently without requiring the entire dataset to be loaded
-     * into memory at once. Each object in the stream will be processed incrementally to populate the Excel sheet.
+     * Maps a stream of POJOs to an Excel workbook.
+     *
+     * <p>This method efficiently handles large datasets by processing the stream incrementally and reducing memory usage.</p>
      *
      * @param dataStream the stream of POJOs to map to the Excel workbook.
-     * @return a Workbook object containing the data.
-     * @throws IllegalArgumentException if the data stream is null, empty, or the POJO class is not annotated with @ExcelMapper.
+     * @return a {@link Workbook} object containing the mapped data.
+     * @throws IllegalArgumentException if the data stream is null, empty, or the POJO class is not annotated with {@link ExcelMapper}.
      */
     public Workbook mapToExcel(Stream<?> dataStream) {
-
-        // Create a new workbook for the Excel file
-        Workbook workbook = new XSSFWorkbook();
-
-        // Validate the input stream
         if (Objects.isNull(dataStream)) {
-            throw new IllegalArgumentException("The list of data cannot be empty.");
+            throw new IllegalArgumentException("The data stream cannot be null.");
         }
 
         List<?> dataList = dataStream.collect(Collectors.toList());
-        // Get the class of the first object in the stream
         Class<?> clazz = extractClassFromStream(dataList);
-        // Check if the class has the @ExcelMapper annotation
+
         ExcelMapper sheetAnnotation = clazz.getAnnotation(ExcelMapper.class);
         if (sheetAnnotation == null) {
-            throw new IllegalArgumentException("POJO class must have an @ExcelMapper annotation.");
+            throw new IllegalArgumentException("POJO class must be annotated with @ExcelMapper.");
         }
 
-        // Retrieve the sheet name from the annotation
         String sheetName = sheetAnnotation.sheetName();
-        // Create a new sheet in the workbook with the provided name
+        Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet(sheetName);
 
-        // Step 1: Extract Column Metadata
+        // Extract column metadata for header and data population
         ColumnMetadataExtractor columnMetadataExtractor = new ColumnMetadataExtractor();
         List<ColumnMetadata> columnMetadataList = columnMetadataExtractor.process(clazz);
 
-        // Step 2: Populate header values
+        // Populate header row and data rows based on column metadata
         populateHeaderValues(sheet, columnMetadataList);
-
-        // Step 3: Populate data rows
         populateRowValues(dataList.stream(), sheet, columnMetadataList);
 
-        // Return the generated workbook
         return workbook;
     }
 
-    private Class<?> extractClassFromStream(List<?> dataStream) {
-        // Peek the first element from the stream to infer the class
-        return dataStream.stream().findFirst()
+    /**
+     * Extracts the class type from the first object in the provided data list.
+     *
+     * @param dataList the list of data objects to extract the class from.
+     * @return the class type of the first object.
+     * @throws IllegalArgumentException if the list is empty.
+     */
+    private Class<?> extractClassFromStream(List<?> dataList) {
+        return dataList.stream()
+                .findFirst()
                 .map(Object::getClass)
-                .orElseThrow(() -> new IllegalArgumentException("The data stream is empty."));
+                .orElseThrow(() -> new IllegalArgumentException("The data list is empty."));
     }
 
     /**
-     * Populates the header row of the Excel sheet with column names.
-     * The column headers are derived from the column metadata and styled accordingly.
+     * Populates the header row in the Excel sheet with the column names derived from the POJO's annotations.
      *
-     * @param sheet              the sheet in the workbook where headers are to be populated.
-     * @param columnMetadataList the list of ColumnMetadata to determine the headers.
+     * @param sheet the sheet in the workbook where the header should be populated.
+     * @param columnMetadataList the list of {@link ColumnMetadata} objects containing column order and header names.
      */
     private void populateHeaderValues(Sheet sheet, List<ColumnMetadata> columnMetadataList) {
-        // Create the first row for the headers
         Row headerRow = sheet.createRow(Config.ROW_VALUE_FOR_HEADER);
-        // Set the header cell style
         CellStyle cellStyle = CellUtils.styleForHeader(sheet);
 
-        // Populate each header cell
+        // Iterate through column metadata and set headers in the first row
         for (ColumnMetadata columnMetadata : columnMetadataList) {
-            // Create a cell for each column and set the header value
             Cell cell = headerRow.createCell(columnMetadata.getColumnOrder() - 1);
             cell.setCellValue(columnMetadata.getHeader());
-            // Apply the header style to the cell
             cell.setCellStyle(cellStyle);
         }
 
-        // Auto-size the columns to fit the content
+        // Auto-size the columns based on the longest content
         CellUtils.autoSize(sheet, columnMetadataList);
     }
 
     /**
-     * Populates the data rows of the Excel sheet with the values from the POJO stream.
-     * The values are extracted based on the column metadata and set in the corresponding cells.
+     * Populates the data rows in the Excel sheet based on the provided POJO stream.
      *
-     * @param dataStream         the stream of POJOs from which data values will be extracted.
-     * @param sheet              the sheet in the workbook where the data rows are to be populated.
-     * @param columnMetadataList the list of ColumnMetadata to determine the column order and corresponding data.
+     * @param dataStream the stream of POJOs containing the data values for the rows.
+     * @param sheet the sheet in the workbook where data rows should be populated.
+     * @param columnMetadataList the list of {@link ColumnMetadata} objects containing column order and metadata.
      */
     private void populateRowValues(Stream<?> dataStream, Sheet sheet, List<ColumnMetadata> columnMetadataList) {
-        // Atomic integer to keep track of the row index
         AtomicInteger rowIndex = new AtomicInteger(Config.ROW_VALUE_START_FOR_DATA);
 
-        // Process each object in the stream
+        // Iterate through each object in the stream and create corresponding rows in the sheet
         dataStream.forEach(targetObject -> {
-            // Create a new row for the current object
             Row row = sheet.createRow(rowIndex.getAndIncrement());
 
-            // Iterate over the column metadata and set values for each column
+            // Iterate through columns and set cell values based on POJO field values
             for (ColumnMetadata columnMetadata : columnMetadataList) {
-                // Extract the field value using the FieldExtractor
-                String value = fieldExtractor.process(columnMetadata, targetObject);
+                Object fieldValue = fieldExtractor.process(columnMetadata, targetObject);
+                String value = objectValueProcessor.process(fieldValue);
 
-                // Create a cell for each column and set the extracted value
+                // Truncate long values to avoid Excel's character limit for a cell (32,767 characters)
+                if (value != null && value.length() > 32767) {
+                    value = value.substring(0, 32760);
+                }
+
                 Cell cell = row.createCell(columnMetadata.getColumnOrder() - 1);
                 cell.setCellValue(value);
             }

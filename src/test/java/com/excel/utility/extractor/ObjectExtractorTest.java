@@ -6,9 +6,9 @@ import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ObjectValueExtractorTest {
+class ObjectExtractorTest {
 
-    private final ObjectValueExtractor objectValueExtractor = new ObjectValueExtractor();
+    private final ObjectExtractor objectExtractor = new ObjectExtractor();
 
     @Test
     void testProcess_WithGetterMethod() throws NoSuchFieldException {
@@ -17,7 +17,7 @@ class ObjectValueExtractorTest {
         Field field = testObject.getClass().getDeclaredField("employeeId");
 
         // Act: Call the process method to retrieve the field value via getter
-        Object fieldValue = objectValueExtractor.process(testObject, field);
+        Object fieldValue = objectExtractor.process(testObject, field);
 
         // Assert: Ensure the field value is returned correctly using the getter method
         assertEquals(101, fieldValue);
@@ -30,7 +30,7 @@ class ObjectValueExtractorTest {
         Field field = testObject.getClass().getDeclaredField("employeeActive");
 
         // Act: Call the process method to retrieve the field value via is-method
-        Object fieldValue = objectValueExtractor.process(testObject, field);
+        Object fieldValue = objectExtractor.process(testObject, field);
 
         // Assert: Ensure the field value is returned correctly using the is-method
         assertTrue((Boolean) fieldValue);  // Cast fieldValue to Boolean for the assertion
@@ -43,7 +43,7 @@ class ObjectValueExtractorTest {
         Field field = testObject.getClass().getDeclaredField("employeeName");
 
         // Act: Call the process method to retrieve the field value directly
-        Object fieldValue = objectValueExtractor.process(testObject, field);
+        Object fieldValue = objectExtractor.process(testObject, field);
 
         // Assert: Ensure the field value is returned correctly using direct field access
         assertEquals("John Doe", fieldValue);
@@ -67,7 +67,7 @@ class ObjectValueExtractorTest {
 
         // Assert: Ensure the process method returns null when the field is not found
         Field finalField = field;
-        assertThrows(IllegalArgumentException.class, () -> objectValueExtractor.process(testObject, finalField));
+        assertThrows(IllegalArgumentException.class, () -> objectExtractor.process(testObject, finalField));
     }
 
 
@@ -77,7 +77,7 @@ class ObjectValueExtractorTest {
         MyTestObject testObject = new MyTestObject();
 
         // Act & Assert: Ensure passing null for field results in a NullPointerException
-        assertThrows(NullPointerException.class, () -> objectValueExtractor.process(testObject, null));
+        assertThrows(NullPointerException.class, () -> objectExtractor.process(testObject, null));
     }
 
     @Test
@@ -87,7 +87,7 @@ class ObjectValueExtractorTest {
         Field field = MyTestObject.class.getDeclaredField("employeeId");
 
         // Act: Call the process method with a null object
-        assertNull(objectValueExtractor.process(testObject, field));
+        assertNull(objectExtractor.process(testObject, field));
     }
 
     @Test
@@ -97,7 +97,7 @@ class ObjectValueExtractorTest {
         Field field = testObject.getClass().getDeclaredField("employeeName");
 
         // Act: Call the process method to retrieve the field value directly
-        Object fieldValue = objectValueExtractor.process(testObject, field);
+        Object fieldValue = objectExtractor.process(testObject, field);
 
         // Assert: Ensure direct field access retrieves the correct value
         assertEquals("John Doe", fieldValue);
@@ -110,7 +110,7 @@ class ObjectValueExtractorTest {
         Field field = testObject.getClass().getDeclaredField("privateField");
 
         // Act: Call the process method to retrieve the field value directly
-        Object fieldValue = objectValueExtractor.process(testObject, field);
+        Object fieldValue = objectExtractor.process(testObject, field);
 
         // Assert: Ensure the value is extracted even though the field is private
         assertEquals("Private Value", fieldValue);

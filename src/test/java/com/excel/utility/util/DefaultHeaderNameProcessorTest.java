@@ -1,12 +1,13 @@
 package com.excel.utility.util;
 
+import com.excel.utility.processor.impl.DefaultHeaderNameProcessor;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class HeaderNameProcessUtilsTest {
+class DefaultHeaderNameProcessorTest {
 
-    private final HeaderNameProcessUtils utils = new HeaderNameProcessUtils();
+    private final DefaultHeaderNameProcessor utils = new DefaultHeaderNameProcessor();
 
     @Test
     void testConvertHeader_WithAnnotationHeader() {

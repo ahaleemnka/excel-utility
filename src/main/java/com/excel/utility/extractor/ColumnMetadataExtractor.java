@@ -3,8 +3,8 @@ package com.excel.utility.extractor;
 import com.excel.utility.annotation.ExcelColumn;
 import com.excel.utility.annotation.ExcelMapper;
 import com.excel.utility.dto.ColumnMetadata;
+import com.excel.utility.processor.impl.DefaultHeaderNameProcessor;
 import com.excel.utility.util.ClassTypeUtils;
-import com.excel.utility.util.HeaderNameProcessUtils;
 import com.excel.utility.util.ValidationUtils;
 
 import java.lang.reflect.Field;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * It also ensures that there are no circular references during the metadata extraction and that missing column orders are assigned sequentially.
  * <p>
  * This class relies on annotations (`@ExcelMapper`, `@ExcelColumn`) to extract necessary metadata. Additionally, it utilizes a utility
- * class (`HeaderNameProcessUtils`) to compute the appropriate header names for each column.
+ * class (`DefaultHeaderNameProcessor`) to compute the appropriate header names for each column.
  */
 public class ColumnMetadataExtractor {
 
@@ -35,13 +35,13 @@ public class ColumnMetadataExtractor {
      * A utility class used to process and generate the header names based on the column annotations.
      * It combines the parent header and the field's name to generate the final header name.
      */
-    private final HeaderNameProcessUtils headerNameProcessUtils;
+    private final DefaultHeaderNameProcessor defaultHeaderNameProcessor;
 
     /**
-     * Default constructor initializing the HeaderNameProcessUtils instance.
+     * Default constructor initializing the DefaultHeaderNameProcessor instance.
      */
     public ColumnMetadataExtractor() {
-        headerNameProcessUtils = new HeaderNameProcessUtils();
+        defaultHeaderNameProcessor = new DefaultHeaderNameProcessor();
     }
 
     /**
@@ -100,15 +100,11 @@ public class ColumnMetadataExtractor {
                 ExcelColumn annotation = field.getAnnotation(ExcelColumn.class);
 
                 // Generate the computed header name based on the annotation and parent header.
-                String computedHeader = annotation == null ? headerNameProcessUtils.convertHeader(null, parentHeader, field.getName())
-                        : headerNameProcessUtils.convertHeader(annotation.header(), parentHeader, field.getName());
+                String computedHeader = getComputedHeader(parentHeader, field, annotation);
 
                 int columnOrder = annotation == null ? 0 : annotation.columnOrder();
 
-                if (ClassTypeUtils.isPrimitiveOrWrapper(field.getType())
-                        || ClassTypeUtils.isListSetMap(field.getType())
-                        || ClassTypeUtils.isJavaLibrary(field.getType())
-                        || Objects.isNull(field.getType().getAnnotation(ExcelMapper.class))) {
+                if (isNotNestedProcessingObject(field)) {
                     // Create ColumnMetadata for primitive or wrapper types and add to the metadata list.
                     ColumnMetadata columnMetadata = new ColumnMetadata(
                             field,
@@ -130,6 +126,18 @@ public class ColumnMetadataExtractor {
 
         // After processing all fields in the class, remove the class from the visited set.
         visited.remove(clazz);
+    }
+
+    private static boolean isNotNestedProcessingObject(Field field) {
+        return ClassTypeUtils.isPrimitiveOrWrapper(field.getType())
+                || ClassTypeUtils.isListSetMap(field.getType())
+                || ClassTypeUtils.isJavaLibrary(field.getType())
+                || Objects.isNull(field.getType().getAnnotation(ExcelMapper.class));
+    }
+
+    private String getComputedHeader(String parentHeader, Field field, ExcelColumn annotation) {
+        return annotation == null ? defaultHeaderNameProcessor.convertHeader(null, parentHeader, field.getName())
+                : defaultHeaderNameProcessor.convertHeader(annotation.header(), parentHeader, field.getName());
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.excel.utility.extractor;
 
 import com.excel.utility.dto.ColumnMetadata;
+import com.excel.utility.processor.impl.DefaultObjectValueProcessor;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -13,6 +14,8 @@ class FieldExtractorTest {
 
     private static final String MAP_DELIMITER = " : ";
     private final FieldExtractor fieldExtractor = new FieldExtractor();
+
+    private final DefaultObjectValueProcessor defaultObjectValueProcessor = new DefaultObjectValueProcessor();
 
     // Helper method for creating a dummy ColumnMetadata with parent class fields
     private ColumnMetadata createColumnMetadata(List<Field> parentClassFields) {
@@ -28,7 +31,7 @@ class FieldExtractorTest {
         Object targetObject = new Object();  // Random object
 
         // Process the object and assert empty string
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("", result, "Empty field should return an empty string.");
     }
 
@@ -38,7 +41,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("primitiveField")));
         SomeClass targetObject = new SomeClass(42);
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("42", result, "Primitive field value should be returned as a string.");
     }
 
@@ -48,7 +51,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("wrapperField")));
         SomeClass targetObject = new SomeClass(Integer.valueOf(100));
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("100", result, "Wrapper field value should be returned as a string.");
     }
 
@@ -58,7 +61,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("nullField")));
         SomeClass targetObject = new SomeClass(Optional.ofNullable(null));
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("", result, "Null field value should return an empty string.");
     }
 
@@ -68,7 +71,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("listField")));
         SomeClass targetObject = new SomeClass(Arrays.asList("Apple", "Banana", "Cherry"));
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("Apple, Banana, Cherry", result, "List field should be flattened correctly.");
     }
 
@@ -78,7 +81,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("mapField")));
         SomeClass targetObject = new SomeClass(Map.of("Key1", "Value1", "Key2", "Value2"));
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertTrue(result.contains("Key1" + MAP_DELIMITER + "Value1\nKey2" + MAP_DELIMITER + "Value2") || result.contains("Key2" + MAP_DELIMITER + "Value2\nKey1" + MAP_DELIMITER + "Value1"), "Map field should be flattened correctly.");
     }
 
@@ -91,7 +94,7 @@ class FieldExtractorTest {
         ));
         SomeClass targetObject = new SomeClass(new NestedClass("NestedValue"));
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("NestedValue", result, "Nested object should be traversed correctly.");
     }
 
@@ -104,7 +107,7 @@ class FieldExtractorTest {
         ));
         SomeClass targetObject = new SomeClass(Optional.ofNullable(null));
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("", result, "If any part of the hierarchy is null, it should return an empty string.");
     }
 
@@ -114,7 +117,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.emptyList());
         SomeClass targetObject = new SomeClass("SomeString");
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("", result, "If no field list is provided, the field should be empty.");
     }
 
@@ -124,7 +127,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("nullField")));
         SomeClass targetObject = new SomeClass("SomeString");
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("SomeString", result, "If no field list is provided, the field should be returned directly.");
     }
 
@@ -134,7 +137,7 @@ class FieldExtractorTest {
         ColumnMetadata metadata = createColumnMetadata(Collections.singletonList(SomeClass.class.getDeclaredField("primitiveField")));
         SomeClass targetObject = null;
 
-        String result = fieldExtractor.process(metadata, targetObject);
+        String result = defaultObjectValueProcessor.process(fieldExtractor.process(metadata, targetObject));
         assertEquals("", result, "When the target object is null, the result should be an empty string.");
     }
 
