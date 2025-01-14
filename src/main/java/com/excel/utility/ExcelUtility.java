@@ -16,6 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.excel.utility.Config.DEFAULT_SHEET_NAME;
+import static com.excel.utility.Config.MAX_LENGTH_SHEET_NAME;
+
 /**
  * The {@code ExcelUtility} class provides functionality to map a list or stream of Plain Old Java Objects (POJOs)
  * into an Excel workbook, facilitating data export from Java applications to Excel format.
@@ -74,7 +77,7 @@ public class ExcelUtility {
     /**
      * Constructor initializing the utility with custom implementations for both field extraction and value processing.
      *
-     * @param fieldExtractor the custom field extractor to use.
+     * @param fieldExtractor       the custom field extractor to use.
      * @param objectValueProcessor the custom value processor to use.
      */
     public ExcelUtility(FieldExtractor fieldExtractor, ObjectValueProcessor objectValueProcessor) {
@@ -87,12 +90,26 @@ public class ExcelUtility {
      *
      * <p>This method collects the data from the provided list and creates an Excel sheet with the appropriate headers and rows.</p>
      *
+     * @param dataList  the list of POJOs to map to the Excel workbook.
+     * @param sheetName sheet name for Excel workbook.
+     * @return a {@link Workbook} object containing the mapped data.
+     * @throws IllegalArgumentException if the data list is empty or the POJO class is not annotated with {@link ExcelMapper}.
+     */
+    public Workbook mapToExcel(List<?> dataList, String sheetName) {
+        return mapToExcel(dataList.stream(), sheetName);
+    }
+
+    /**
+     * Maps a list of POJOs to an Excel workbook.
+     *
+     * <p>This method collects the data from the provided list and creates an Excel sheet with the appropriate headers and rows.</p>
+     *
      * @param dataList the list of POJOs to map to the Excel workbook.
      * @return a {@link Workbook} object containing the mapped data.
      * @throws IllegalArgumentException if the data list is empty or the POJO class is not annotated with {@link ExcelMapper}.
      */
     public Workbook mapToExcel(List<?> dataList) {
-        return mapToExcel(dataList.stream());
+        return mapToExcel(dataList.stream(), null);
     }
 
     /**
@@ -105,6 +122,20 @@ public class ExcelUtility {
      * @throws IllegalArgumentException if the data stream is null, empty, or the POJO class is not annotated with {@link ExcelMapper}.
      */
     public Workbook mapToExcel(Stream<?> dataStream) {
+        return mapToExcel(dataStream, null);
+    }
+
+    /**
+     * Maps a stream of POJOs to an Excel workbook.
+     *
+     * <p>This method efficiently handles large datasets by processing the stream incrementally and reducing memory usage.</p>
+     *
+     * @param dataStream the stream of POJOs to map to the Excel workbook.
+     * @param sheetName  sheet name for Excel workbook.
+     * @return a {@link Workbook} object containing the mapped data.
+     * @throws IllegalArgumentException if the data stream is null, empty, or the POJO class is not annotated with {@link ExcelMapper}.
+     */
+    public Workbook mapToExcel(Stream<?> dataStream, String sheetName) {
         if (Objects.isNull(dataStream)) {
             throw new IllegalArgumentException("The data stream cannot be null.");
         }
@@ -117,9 +148,9 @@ public class ExcelUtility {
             throw new IllegalArgumentException("POJO class must be annotated with @ExcelMapper.");
         }
 
-        String sheetName = sheetAnnotation.sheetName();
+        String sheetNameProcessed = getSheetName(sheetName);
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet(sheetName);
+        Sheet sheet = workbook.createSheet(sheetNameProcessed);
 
         // Extract column metadata for header and data population
         ColumnMetadataExtractor columnMetadataExtractor = new ColumnMetadataExtractor();
@@ -130,6 +161,31 @@ public class ExcelUtility {
         populateRowValues(dataList.stream(), sheet, columnMetadataList);
 
         return workbook;
+    }
+
+    /**
+     * Process the sheet name
+     *
+     * @param sheetName sheet name provided by the user
+     * @return processed sheet name for the excel sheet
+     */
+    private String getSheetName(String sheetName) {
+        if (Objects.isNull(sheetName) || sheetName.isEmpty()) {
+            return DEFAULT_SHEET_NAME;
+        }
+
+        // Trim leading and trailing spaces
+        sheetName = sheetName.trim();
+
+        // Replace invalid characters with a dash
+        sheetName = sheetName.replaceAll("[/\\\\:*?]", "-");
+
+        // Truncate the sheet name if it exceeds the maximum allowed length
+        if (sheetName.length() > MAX_LENGTH_SHEET_NAME) {
+            sheetName = sheetName.substring(0, MAX_LENGTH_SHEET_NAME);
+        }
+
+        return sheetName;
     }
 
     /**
@@ -149,7 +205,7 @@ public class ExcelUtility {
     /**
      * Populates the header row in the Excel sheet with the column names derived from the POJO's annotations.
      *
-     * @param sheet the sheet in the workbook where the header should be populated.
+     * @param sheet              the sheet in the workbook where the header should be populated.
      * @param columnMetadataList the list of {@link ColumnMetadata} objects containing column order and header names.
      */
     private void populateHeaderValues(Sheet sheet, List<ColumnMetadata> columnMetadataList) {
@@ -170,8 +226,8 @@ public class ExcelUtility {
     /**
      * Populates the data rows in the Excel sheet based on the provided POJO stream.
      *
-     * @param dataStream the stream of POJOs containing the data values for the rows.
-     * @param sheet the sheet in the workbook where data rows should be populated.
+     * @param dataStream         the stream of POJOs containing the data values for the rows.
+     * @param sheet              the sheet in the workbook where data rows should be populated.
      * @param columnMetadataList the list of {@link ColumnMetadata} objects containing column order and metadata.
      */
     private void populateRowValues(Stream<?> dataStream, Sheet sheet, List<ColumnMetadata> columnMetadataList) {

@@ -6,7 +6,7 @@
 
     <groupId>com.excel.util</groupId>
     <artifactId>excel-utility</artifactId>
-    <version>1.1.0</version>
+    <version>1.4.0</version>
 
     <name>Excel Utility</name>
     <description>A utility for Excel data mapping and processing</description>

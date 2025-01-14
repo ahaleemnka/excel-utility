@@ -1,8 +1,9 @@
+
 # Excel Mapping Utility
 
 This application provides a utility to map a list of POJOs (Plain Old Java Objects) to an Excel workbook, creating well-organized and metadata-driven Excel sheets. It uses Java reflection and annotations to automatically extract column metadata and populate Excel sheets with headers and data rows.
 
-See medium publish for the same :
+See medium publish for the same:
 [Part 1](https://medium.com/@ahaleemnka/part-1-the-journey-to-simplifying-excel-handling-4d910a59e0e0)
 [Part 2](https://medium.com/@ahaleemnka/part-2-mastering-the-excel-mapper-utility-5006484b6b1f)
 [Part 3](https://medium.com/@ahaleemnka/part-3-setting-up-and-using-the-excel-mapper-utility-16b06433a979)
@@ -35,7 +36,7 @@ See medium publish for the same :
 
 1. Clone this repository to your local machine.
    ```bash
-   git clone https://github.com/your-repo/excel-mapper.git
+   git clone https://github.com/ahaleemnka/excel-utility.git
    cd excel-mapper
    ```
 
@@ -57,7 +58,7 @@ See medium publish for the same :
 
 ### Example POJO Class with Annotations
 ```java
-@ExcelMapper(sheetName = "Employee Data")
+@ExcelMapper
 public class Employee {
     @ExcelColumn(header = "Employee ID", columnOrder = 1)
     private int employeeId;
@@ -78,7 +79,7 @@ public class Main {
     public static void main(String[] args) {
         List<Employee> employees = // Get your employee data list
         ExcelUtility excelUtility = new ExcelUtility();
-        Workbook workbook = excelUtility.mapToExcel(employees);
+        Workbook workbook = excelUtility.mapToExcel(employees, "Employee Data");
 
         // Now you can write the workbook to a file or use it further
     }
@@ -96,7 +97,7 @@ This will produce an Excel sheet named **"Employee Data"** with three columns: *
 
 - **Purpose:** The `ExcelUtility` class converts a list of POJOs into an Excel workbook. It processes annotations like `@ExcelMapper` and `@ExcelColumn` to structure the sheet and columns.
 - **Key Methods:**
-  - `mapToExcel`: Maps the POJO list to an Excel workbook.
+  - `mapToExcel`: Maps the POJO list to an Excel workbook, now taking the sheet name as a parameter.
   - `populateHeaderValues`: Populates the header row with column names.
   - `populateRowValues`: Populates the data rows using the field values extracted from POJOs.
 
@@ -195,6 +196,14 @@ We welcome contributions to improve the application. If you'd like to contribute
 ---
 
 ## Changelog
+### Version 1.4.0 (2025-01-14)
+- **Enhancement**: Improved handling of Excel sheet names. 
+  - Sheet names now support special characters and invalid characters are replaced with dashes. 
+  - Leading and trailing whitespace in sheet names is automatically trimmed.
+  - Sheet names exceeding 31 characters are truncated to comply with Excel's limitations.
+- **Feature Update**: Removed the `sheetName` attribute from the `@ExcelMapper` annotation. The sheet name is now provided as a parameter to the `ExcelUtility.mapToExcel` method.
+- **Bug Fixes**: Improved handling of metadata processing and data mapping.
+
 ### Version 1.3.0 (2025-01-05)
 - **Enhancement**: Improved processing of lists and maps for Excel output.
   - Lists are now converted to comma-separated strings for better readability in Excel cells.
