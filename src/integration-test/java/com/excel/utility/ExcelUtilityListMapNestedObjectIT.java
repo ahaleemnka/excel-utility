@@ -12,7 +12,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class Advanced2ExcelMapperIT {
+public class ExcelUtilityListMapNestedObjectIT {
 
     @Test
     public void testExcelMapperWithAdvancedScenarios() {
@@ -32,7 +32,7 @@ public class Advanced2ExcelMapperIT {
 
         ExcelUtility excelMapper = new ExcelUtility();
 
-        Workbook workbook = excelMapper.mapToExcel(inputData);
+        Workbook workbook = excelMapper.mapToHSSFWorkbook(inputData);
         Sheet sheet = workbook.getSheetAt(0);
 
         // Validate headers

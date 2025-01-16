@@ -11,7 +11,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class AdvancedExcelMapperIT {
+public class ExcelUtilityListMapComplexNestedObjectIT {
 
     List<String> largeMapValues = new ArrayList<>();
     List<String> largeList = new ArrayList<>();
@@ -52,7 +52,7 @@ public class AdvancedExcelMapperIT {
         ExcelUtility excelMapper = new ExcelUtility();
 
         // Generate and read the Excel file
-        Workbook workbook = excelMapper.mapToExcel(inputData);
+        Workbook workbook = excelMapper.mapToHSSFWorkbook(inputData);
         Sheet sheet = workbook.getSheetAt(0);
 
         // Validate header row

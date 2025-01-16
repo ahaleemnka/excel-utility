@@ -35,7 +35,7 @@ public class ExcelMapperIT {
         ExcelUtility excelMapper = new ExcelUtility();
 
         // Generate and read the Excel file
-        Workbook workbook = excelMapper.mapToExcel(inputData);
+        Workbook workbook = excelMapper.mapToHSSFWorkbook(inputData);
         Sheet sheet = workbook.getSheetAt(0);
 
         // Validate the content of the Excel file

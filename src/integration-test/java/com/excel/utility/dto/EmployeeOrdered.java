@@ -33,7 +33,7 @@ public class EmployeeOrdered {
     @ExcelColumn(columnOrder = 7, header = "Performance Rating")
     private Double performanceRating; // Wrapper class for double
 
-    @ExcelColumn(columnOrder = 8, header = "Is Verified")
+    @ExcelColumn(columnOrder = 8, header = "Eligible")
     private Boolean isVerified; // Wrapper class for boolean
 
     @ExcelColumn(columnOrder = 9, header = "Email")
@@ -56,7 +56,7 @@ public class EmployeeOrdered {
 
     // New field types: LocalDateTime, Currency, BigDecimal
 
-    @ExcelColumn(columnOrder = 15, header = "Last Login")
+    @ExcelColumn(columnOrder = 15, header = "Last Updated")
     private LocalDateTime lastLogin; // LocalDateTime (used for storing both date and time)
 
     @ExcelColumn(columnOrder = 16, header = "Currency")

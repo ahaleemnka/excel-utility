@@ -56,12 +56,6 @@ public interface Config {
     String EMPTY = "<empty>";
 
     /**
-     * The maximum length for a sheet name.
-     * <p>This constant defines the limit on the length of the sheet name. In Excel, sheet names are typically limited to 31 characters.</p>
-     */
-    Integer MAX_LENGTH_SHEET_NAME = 30;
-
-    /**
      * The default sheet name used when no name is provided.
      * <p>If no sheet name is specified, the default name "Sheet" will be used.</p>
      */
